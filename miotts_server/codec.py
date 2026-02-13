@@ -74,16 +74,20 @@ class MioCodecService:
     ) -> torch.Tensor:
         if reference_waveform is None and global_embedding is None:
             raise ValueError("Either reference_waveform or global_embedding is required.")
+        device = _codec_device(self.codec)
 
         # Extract global embedding from reference waveform if provided
         if reference_waveform is not None:
+            reference_waveform = reference_waveform.to(device=device, dtype=torch.float32)
             ref_features = self.codec.encode(reference_waveform, return_content=False, return_global=True)
             global_embedding = ref_features.global_embedding
 
         if isinstance(tokens, list):
-            tokens = torch.tensor(tokens, dtype=torch.long, device=_codec_device(self.codec))
+            tokens = torch.tensor(tokens, dtype=torch.long, device=device)
         elif isinstance(tokens, torch.Tensor) and tokens.dtype != torch.long:
-            tokens = tokens.long()
+            tokens = tokens.long().to(device)
+        elif isinstance(tokens, torch.Tensor):
+            tokens = tokens.to(device)
         return self.codec.decode(
             global_embedding=global_embedding,
             content_token_indices=tokens,
@@ -106,6 +110,7 @@ class MioCodecService:
 
         # Extract global embedding from reference waveform if provided
         if reference_waveform is not None:
+            reference_waveform = reference_waveform.to(device=device, dtype=torch.float32)
             ref_features = self.codec.encode(reference_waveform, return_content=False, return_global=True)
             global_embedding = ref_features.global_embedding
         token_tensors = []

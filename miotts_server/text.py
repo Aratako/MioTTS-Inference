@@ -5,6 +5,7 @@ import re
 REPLACE_MAP: dict[str, str] = {
     r"\t": "",
     r"\[n\]": "",
+    r" ": "",
     r"　": "",
     r"[;▼♀♂《》≪≫①②③④⑤⑥]": "",
     r"[\u02d7\u2010-\u2015\u2043\u2212\u23af\u23e4\u2500\u2501\u2e3a\u2e3b]": "",
@@ -60,7 +61,7 @@ def normalize_text(text: str) -> str:
     if text.startswith("(") and text.endswith(")"):
         text = text[1:-1]
 
-    if text.endswith("。"):
-        text = text.rstrip("。")
+    if text.endswith(("。", "、")):
+        text = text.rstrip("。、")
 
     return text
